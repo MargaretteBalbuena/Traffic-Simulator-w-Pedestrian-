@@ -177,6 +177,16 @@ header p {
 }
 
 
+.lane-timer {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: 1px;
+  min-height: 1em;
+  text-align: center;
+}
+
+
 /* ─── CONTROLS PANEL ────────────────────────────────────────── */
 .controls-panel {
   width: 100%;
@@ -222,6 +232,7 @@ header p {
 
 input[type="range"].mode-slider {
   -webkit-appearance: none;
+  appearance: none;
   width: 120px;
   height: 6px;
   border-radius: 3px;
@@ -426,12 +437,6 @@ input[type="range"].mode-slider::-webkit-slider-thumb:hover {
   opacity: 1;
   color: #22c55e;
   filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.65));
-}
-
-
-.ped-signal.wait .ped-timer,
-.ped-signal.walk .ped-timer {
-  visibility: hidden;
 }
 
 
