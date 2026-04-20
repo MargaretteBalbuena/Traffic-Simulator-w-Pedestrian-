@@ -79,6 +79,7 @@ const btnClearLog    = $('btn-clear-log');
 const labelManual    = $('label-manual');
 const labelTimed     = $('label-timed');
 const btnCross       = $('btn-cross');
+const btnFetchData   = $('btn-fetch-data');
 const pedSignal      = $('ped-signal');
 const pedStateText   = $('ped-state-text');
 const pedTimer       = $('ped-timer');
@@ -394,6 +395,33 @@ function log(message, type = 'info') {
 
 
 /* ─────────────────────────────────────────────────────────────
+   FETCH ROAD DATA
+   Calls a sample API and writes the result to the Event Log.
+───────────────────────────────────────────────────────────── */
+async function fetchRoadData() {
+  const apiUrl = 'https://jsonplaceholder.typicode.com/todos/1';
+
+  try {
+    log('🌐 Fetching road data from API...', 'info');
+
+    const response = await fetch(apiUrl);
+
+    // Only continue when the response is successful (2xx)
+    if (!response.ok) {
+      throw new Error('Request failed with status ' + response.status);
+    }
+
+    const roadData = await response.json();
+
+    // Show the full JSON object in the Event Log panel
+    log('📦 API Data: ' + JSON.stringify(roadData), 'success');
+  } catch (error) {
+    log('❌ Failed to fetch road data: ' + error.message, 'danger');
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
    RUN MANUAL TRANSITION
    Triggers a full transition sequence:
      Active lane:  go → warning (1.5s) → stop
@@ -613,6 +641,12 @@ btnStopTimed.addEventListener('click', function () {
 // Pedestrian crossing request button
 btnCross.addEventListener('click', function () {
   requestPedestrianCrossing();
+});
+
+
+// Fetch sample API data button
+btnFetchData.addEventListener('click', function () {
+  fetchRoadData();
 });
 
 
