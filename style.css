@@ -77,6 +77,14 @@ header p {
 }
 
 
+.pedestrian-signal-zone {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -8px;
+}
+
+
 .intersection-icon {
   font-size: 2.5rem;
   opacity: 0.3;
@@ -282,6 +290,163 @@ input[type="range"].mode-slider::-webkit-slider-thumb:hover {
 }
 
 
+/* ─── PEDESTRIAN PANEL ─────────────────────────────────────── */
+.pedestrian-panel {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+
+.pedestrian-panel h4 {
+  width: 100%;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: #6b7280;
+}
+
+
+.ped-signal {
+  min-width: 220px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid #4b5563;
+  display: grid;
+  grid-template-columns: 84px auto auto;
+  align-items: center;
+  column-gap: 12px;
+  background: linear-gradient(180deg, #111827, #0b1220);
+  box-shadow:
+    0 12px 26px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+
+.ped-lamp-stack {
+  width: 72px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 2px solid #1f2937;
+  background: #05070c;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+
+.ped-lamp {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #111827;
+  background: #141b2d;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+
+.ped-figure {
+  width: 42px;
+  height: 42px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 4.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.22;
+}
+
+
+.ped-lamp-stop .ped-figure { color: #5f2323; }
+.ped-lamp-go .ped-figure { color: #123921; }
+
+
+.ped-state-text {
+  font-size: 0.76rem;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+}
+
+
+.ped-timer {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+
+.ped-signal.wait .ped-state-text,
+.ped-signal.wait .ped-timer {
+  color: #ef4444;
+}
+
+
+.ped-signal.walk .ped-state-text,
+.ped-signal.walk .ped-timer {
+  color: #22c55e;
+}
+
+
+.ped-signal.countdown .ped-state-text,
+.ped-signal.countdown .ped-timer {
+  color: #86efac;
+}
+
+
+.ped-signal.wait .ped-lamp-stop {
+  background: #2b1111;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.45);
+}
+
+
+.ped-signal.wait .ped-lamp-stop .ped-figure-stand {
+  opacity: 1;
+  color: #ef4444;
+  filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.65));
+}
+
+
+.ped-signal.walk .ped-lamp-go,
+.ped-signal.countdown .ped-lamp-go {
+  background: #0f2418;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.45);
+}
+
+
+.ped-signal.walk .ped-lamp-go .ped-figure-walk,
+.ped-signal.countdown .ped-lamp-go .ped-figure-walk {
+  opacity: 1;
+  color: #22c55e;
+  filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.65));
+}
+
+
+.ped-signal.wait .ped-timer,
+.ped-signal.walk .ped-timer {
+  visibility: hidden;
+}
+
+
+.ped-signal.countdown .ped-lamp-go,
+.ped-signal.countdown .ped-figure-walk,
+.ped-signal.countdown .ped-state-text {
+  animation: ped-flash 0.45s step-end infinite;
+}
+
+
+@keyframes ped-flash {
+  50% { opacity: 0.35; }
+}
+
+
 /* ─── UTILITY ────────────────────────────────────────────────── */
 .hidden {
   display: none !important;
@@ -439,3 +604,5 @@ footer span {
 ::-webkit-scrollbar          { width: 5px; }
 ::-webkit-scrollbar-track    { background: #111827; }
 ::-webkit-scrollbar-thumb    { background: #374151; border-radius: 3px; }
+
+

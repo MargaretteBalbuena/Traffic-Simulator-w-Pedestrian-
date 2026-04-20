@@ -14,6 +14,12 @@ const State = {
   mode: 'manual',       // 'manual' | 'timed'
   transitioning: false, // true while a transition animation is running
   timedTimeout: null,   // holds the setTimeout reference for timed mode
+  pedestrianRequested: false,
+  pedestrianCrossing: false,
+  phase: 'normal',      // 'normal' | 'requested' | 'crossing'
+  crossingDuration: 5,
+  countdownWindow: 3,
+  crossingInterval: null,
 };
 
 
@@ -61,6 +67,10 @@ const logContainer   = $('log-container');
 const btnClearLog    = $('btn-clear-log');
 const labelManual    = $('label-manual');
 const labelTimed     = $('label-timed');
+const btnCross       = $('btn-cross');
+const pedSignal      = $('ped-signal');
+const pedStateText   = $('ped-state-text');
+const pedTimer       = $('ped-timer');
 
 
 /* ─────────────────────────────────────────────────────────────
@@ -105,6 +115,133 @@ function renderLight(lights, stateText, state) {
 function renderAll() {
   renderLight(nsLights, nsStateText, State.ns);
   renderLight(ewLights, ewStateText, State.ew);
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   PEDESTRIAN UI
+   Keeps pedestrian signal and button in sync with state.
+───────────────────────────────────────────────────────────── */
+function setPedestrianSignal(signalState, secondsLeft) {
+  pedSignal.classList.remove('wait', 'walk', 'countdown');
+  pedSignal.classList.add(signalState);
+
+
+  if (signalState === 'wait') {
+    pedStateText.textContent = 'WAIT';
+    pedTimer.textContent = '--';
+  } else if (signalState === 'walk') {
+    pedStateText.textContent = 'WALK';
+    pedTimer.textContent = '--';
+  } else {
+    pedStateText.textContent = 'COUNTDOWN';
+    pedTimer.textContent = String(secondsLeft);
+  }
+}
+
+
+function renderCrossButton() {
+  if (State.pedestrianCrossing) {
+    btnCross.disabled = true;
+    btnCross.textContent = 'Crossing...';
+    return;
+  }
+
+
+  if (State.pedestrianRequested) {
+    btnCross.disabled = true;
+    btnCross.textContent = 'Request Queued';
+    return;
+  }
+
+
+  btnCross.disabled = false;
+  btnCross.textContent = 'Cross';
+}
+
+
+function clearCrossingInterval() {
+  clearInterval(State.crossingInterval);
+  State.crossingInterval = null;
+}
+
+
+function requestPedestrianCrossing() {
+  if (State.pedestrianRequested || State.pedestrianCrossing) {
+    log('🚶 Crossing request already queued', 'warning');
+    return;
+  }
+
+
+  State.pedestrianRequested = true;
+  State.phase = 'requested';
+  setPedestrianSignal('wait');
+  renderCrossButton();
+  log('🚶 Pedestrian request queued', 'info');
+
+
+  // Manual mode has no auto-cycle, so start a transition to eventually serve the request.
+  if (State.mode === 'manual' && !State.transitioning) {
+    runManualTransition();
+  }
+}
+
+
+function beginPedestrianCrossing(nextLane, callback) {
+  const totalSeconds = State.crossingDuration;
+  let remaining = totalSeconds;
+
+
+  State.pedestrianRequested = false;
+  State.pedestrianCrossing = true;
+  State.phase = 'crossing';
+  State.ns = 'stop';
+  State.ew = 'stop';
+  renderAll();
+  setPedestrianSignal('walk');
+  renderCrossButton();
+  log('🚶 WALK signal on — all traffic STOP', 'success');
+
+
+  clearCrossingInterval();
+  State.crossingInterval = setInterval(function () {
+    remaining -= 1;
+
+
+    if (remaining > 0 && remaining <= State.countdownWindow) {
+      setPedestrianSignal('countdown', remaining);
+    }
+
+
+    if (remaining <= 0) {
+      clearCrossingInterval();
+      State.pedestrianCrossing = false;
+      State.phase = 'normal';
+      setPedestrianSignal('wait');
+
+
+      if (nextLane === 'ns') {
+        State.ns = 'go';
+        State.ew = 'stop';
+        log('✅ N–S → GO (after pedestrian crossing)', 'success');
+      } else {
+        State.ew = 'go';
+        State.ns = 'stop';
+        log('✅ E–W → GO (after pedestrian crossing)', 'success');
+      }
+
+
+      renderAll();
+      State.transitioning = false;
+      btnTransition.disabled = false;
+      renderCrossButton();
+
+
+      if (typeof callback === 'function') {
+        callback();
+      }
+    }
+  }, 1000);
 }
 
 
@@ -192,6 +329,14 @@ function runManualTransition(callback) {
 
     // Step 3: After 0.6s → waiting lane goes to GO
     setTimeout(function () {
+      if (State.pedestrianRequested) {
+        const nextLaneKey = activeIsNS ? 'ew' : 'ns';
+        log('🚶 Pedestrian phase started — both lanes held at STOP', 'warning');
+        beginPedestrianCrossing(nextLaneKey, callback);
+        return;
+      }
+
+
       log('✅ ' + waitingLane + ' → GO', 'success');
 
 
@@ -276,8 +421,14 @@ function runTimedCycle(nsSeconds, ewSeconds) {
 function stopTimedMode() {
   clearTimeout(State.timedTimeout);
   State.timedTimeout = null;
-  State.transitioning = false;
-  btnTransition.disabled = false;
+
+
+  if (!State.pedestrianCrossing) {
+    State.transitioning = false;
+    btnTransition.disabled = false;
+  }
+
+
   log('⏹ Timed mode stopped', 'warning');
 }
 
@@ -304,6 +455,12 @@ btnStartTimed.addEventListener('click', function () {
 // Timed mode — Stop button
 btnStopTimed.addEventListener('click', function () {
   stopTimedMode();
+});
+
+
+// Pedestrian crossing request button
+btnCross.addEventListener('click', function () {
+  requestPedestrianCrossing();
 });
 
 
@@ -342,7 +499,11 @@ btnClearLog.addEventListener('click', function () {
    Run when the page first loads — render the initial state.
 ───────────────────────────────────────────────────────────── */
 renderAll();
+setPedestrianSignal('wait');
+renderCrossButton();
 log('🚦 Traffic Simulator initialized', 'info');
 log('N–S: STOP | E–W: GO', 'success');
+
+
 
 
