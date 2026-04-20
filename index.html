@@ -40,6 +40,7 @@
             <div class="light green"  id="ns-green"></div>
           </div>
           <span class="state-text" id="ns-state-text">STOP</span>
+          <span class="lane-timer" id="ns-timer">--</span>
         </figure>
 
 
@@ -59,6 +60,7 @@
             <div class="light green"  id="ew-green"></div>
           </div>
           <span class="state-text" id="ew-state-text">GO</span>
+          <span class="lane-timer" id="ew-timer">--</span>
         </figure>
 
 
@@ -123,12 +125,16 @@
         <fieldset class="control-group hidden" id="timed-controls">
           <legend class="visually-hidden">Timed controls</legend>
           <div class="timed-input-group">
-            <label for="ns-time">N–S Go Time (sec)</label>
-            <input type="text" id="ns-time" value="10" placeholder="e.g. 10" />
+            <label for="greenTime">N–S Go Time (sec)</label>
+            <input type="text" id="greenTime" value="10" placeholder="e.g. 10" />
           </div>
           <div class="timed-input-group">
-            <label for="ew-time">E–W Go Time (sec)</label>
-            <input type="text" id="ew-time" value="7" placeholder="e.g. 7" />
+            <label for="redTime">E–W Go Time (sec)</label>
+            <input type="text" id="redTime" value="7" placeholder="e.g. 7" />
+          </div>
+          <div class="timed-input-group">
+            <label for="pedestrianTime">Pedestrian Time (sec)</label>
+            <input type="text" id="pedestrianTime" value="5" placeholder="e.g. 5" />
           </div>
           <button class="btn btn-success" id="btn-start-timed">▶ Start</button>
           <button class="btn btn-danger"  id="btn-stop-timed">■ Stop</button>
